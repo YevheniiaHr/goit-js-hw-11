@@ -25,14 +25,14 @@ function onFormSearch(event) {
   }
 
   fetchImages(query, page, perPage)
-    .then(data => {
+    .then(data =>  {
       if (data.totalHits === 0) {
         Notiflix.Notify.failure(
           'Sorry, there are no images matching your search query. Please try again.'
         );
       } else {
         renderImage(data.hits);
-        simpleLightbox = new SimpleLightbox('.gallery a').refresh();
+         simpleLightbox = new SimpleLightbox('.gallery a').refresh();
         Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
       }
     })
@@ -58,25 +58,29 @@ function renderImage(images) {
         comments,
         downloads,
       } = image;
-      return `<a class="gallery-link href="${largeImageURL}">
-        <div class="gallery-item" id="${id}">
+      return `<div class="photo-card" id="${id}">
+      <a class="gallery-item" href="${largeImageURL}">
         <img class="gallery-img" src="${webformatURL}" alt="${tags}" loading="lazy" />
-        <div class="info">
-          <p class="info-item">
-            <b>Likes</b> ${likes}
-          </p>
-          <p class="info-item">
-            <b>Views</b> ${views}
-          </p>
-          <p class="info-item">
-            <b>Comments</b> ${comments}
-          </p>
-          <p class="info-item"> 
-            <b>Downloads</b> ${downloads}
-          </p>
-        </div>
+      </a>
+      <div class="info">
+        <p class="info-item">
+          <b>Likes</b>
+          ${likes}
+        </p>
+        <p class="info-item">
+          <b>Views</b>
+          ${views}
+        </p>
+        <p class="info-item">
+          <b>Comments</b>
+          ${comments}
+        </p>
+        <p class="info-item">
+          <b>Downloads</b>
+          ${downloads}
+        </p>
       </div>
-      </a>`;
+      </div>`;
     })
     .join('');
   gallery.insertAdjacentHTML('beforeend', markup);
