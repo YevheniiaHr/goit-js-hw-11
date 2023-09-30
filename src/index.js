@@ -1,32 +1,30 @@
-import axios from 'axios';
-const baseURL = 'https://pixabay.com/api/';
-axios.defaults.headers.common['key'] = '39635848-10cc8cbd77891d85da4020fd9';
 import Notiflix from 'notiflix';
-import SimpleLightbox from 'simplelightbox';
-import 'simplelightbox/dist/simple-lightbox.min.css';
+import SimpleLightbox from "simplelightbox";
+
+import "simplelightbox/dist/simple-lightbox.min.css";
 import { fetchImages } from './fetch';
-import simpleLightbox from 'simplelightbox';
-let searchQuery = '';
+
+let query = '';
 let page = 1;
 let perPage = 40;
-
+let simpleLightbox;
 const form = document.querySelector('#search-form');
 const gallery = document.querySelector('.gallery');
 
 form.addEventListener('submit', onFormSearch);
 
-async function onFormSearch(event) {
+function onFormSearch(event) {
   event.preventDefault();
   page = 1;
   gallery.innerHTML = '';
-  const searchQuery = event.target.searchQuery.value;
+  query = event.target.searchQuery.value.trim();
 
-  if (searchQuery.trim() === '') {
+  if (query === '') {
     Notiflix.Notify.failure('Please enter a search query.');
     return;
   }
 
-  fetchImages(searchQuery, page, perPage)
+  fetchImages(query, page, perPage)
     .then(data => {
       if (data.totalHits === 0) {
         Notiflix.Notify.failure(
@@ -34,8 +32,8 @@ async function onFormSearch(event) {
         );
       } else {
         renderImage(data.hits);
-        let simpleLightbox = new SimpleLightbox('.gallery a').refresh();
-        Notiflix.Notify.success('Hooray! We found ${data.totalHits} images.');
+        simpleLightbox = new SimpleLightbox('.gallery a').refresh();
+        Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
       }
     })
     .catch(error => console.log(error))
@@ -61,20 +59,20 @@ function renderImage(images) {
         downloads,
       } = image;
       return `<a class="gallery-link href="${largeImageURL}">
-        <div class="photo-card" id="${id}">
-        <img class="gallery-img"src="${webformatURL}" alt="${tags}" loading="lazy" />
+        <div class="gallery-item" id="${id}">
+        <img class="gallery-img" src="${webformatURL}" alt="${tags}" loading="lazy" />
         <div class="info">
           <p class="info-item">
-            <b>Likes</b>${likes}
+            <b>Likes</b> ${likes}
           </p>
           <p class="info-item">
-            <b>Views</b>${views}
+            <b>Views</b> ${views}
           </p>
           <p class="info-item">
-            <b>Comments</b>${comments}
+            <b>Comments</b> ${comments}
           </p>
-          <p class="info-item">${downloads}
-            <b>Downloads</b>
+          <p class="info-item"> 
+            <b>Downloads</b> ${downloads}
           </p>
         </div>
       </div>
@@ -82,7 +80,7 @@ function renderImage(images) {
     })
     .join('');
   gallery.insertAdjacentHTML('beforeend', markup);
-  console.log(markup);
+
   const { height: cardHeight } = document
     .querySelector('.gallery')
     .firstElementChild.getBoundingClientRect();
@@ -92,3 +90,39 @@ function renderImage(images) {
     behavior: 'smooth',
   });
 }
+
+function endOfPage() {
+  page += 1;
+  simpleLightbox.refresh();
+  fetchImages(query, page, perPage)
+    .then(data => {
+      renderImage(data.hits);
+      simpleLightbox = new SimpleLightbox('.gallery a').refresh();
+      const totalPage = Math.ceil(data.totalHits / perPage);
+      if (page > totalPage) {
+        Notiflix.Notify.failure(
+          "We're sorry, but you've reached the end of search results."
+        );
+      }
+    })
+    .catch(error => console.log(error));
+}
+function checkPage() {
+  return (
+    window.innerHeight + window.scrollY >= document.documentElement.scrollHeight
+  );
+}
+window.addEventListener('scroll', loadMore);
+
+function loadMore() {
+  if (checkPage()) {
+    endOfPage();
+  }
+}
+arrowTop.onclick = function () {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+window.addEventListener('scroll', function () {
+  arrowTop.hidden = scrollY < document.documentElement.clientHeight;
+});
