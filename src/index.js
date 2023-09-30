@@ -1,7 +1,6 @@
 import Notiflix from 'notiflix';
-import SimpleLightbox from "simplelightbox";
-
-import "simplelightbox/dist/simple-lightbox.min.css";
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 import { fetchImages } from './fetch';
 
 let query = '';
@@ -25,18 +24,20 @@ function onFormSearch(event) {
   }
 
   fetchImages(query, page, perPage)
-    .then(data =>  {
+    .then(data => {
       if (data.totalHits === 0) {
         Notiflix.Notify.failure(
           'Sorry, there are no images matching your search query. Please try again.'
         );
       } else {
         renderImage(data.hits);
-         simpleLightbox = new SimpleLightbox('.gallery a').refresh();
+        simpleLightbox = new SimpleLightbox('.gallery a').refresh();
         Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
       }
     })
-    .catch(error => console.log(error))
+    .catch(() => {
+      Notiflix.Notify.failure('404 (Not Found)');
+    })
     .finally(() => {
       form.reset();
     });
@@ -84,15 +85,6 @@ function renderImage(images) {
     })
     .join('');
   gallery.insertAdjacentHTML('beforeend', markup);
-
-  const { height: cardHeight } = document
-    .querySelector('.gallery')
-    .firstElementChild.getBoundingClientRect();
-
-  window.scrollBy({
-    top: cardHeight * 2,
-    behavior: 'smooth',
-  });
 }
 
 function endOfPage() {
@@ -103,6 +95,14 @@ function endOfPage() {
       renderImage(data.hits);
       simpleLightbox = new SimpleLightbox('.gallery a').refresh();
       const totalPage = Math.ceil(data.totalHits / perPage);
+      const { height: cardHeight } = document
+        .querySelector('.gallery')
+        .firstElementChild.getBoundingClientRect();
+
+      window.scrollBy({
+        top: cardHeight * 2,
+        behavior: 'smooth',
+      });
       if (page > totalPage) {
         Notiflix.Notify.failure(
           "We're sorry, but you've reached the end of search results."

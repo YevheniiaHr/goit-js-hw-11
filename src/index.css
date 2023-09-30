@@ -70,9 +70,9 @@ body {
   transform: scale(1.05);
 }
 .info {
-    display: flex;
-    justify-content: space-around;
-align-items: flex-start;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
 }
 
 #arrowTop {
